@@ -1,0 +1,92 @@
+"use client";
+
+import { useState } from "react";
+const Hero = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const categories = [
+    "All Categories",
+    "Vegetables",
+    "Fruits",
+    "Grains",
+    "Dairy",
+  ];
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // TODO: Implement search functionality
+    console.log(
+      "Searching for:",
+      searchQuery,
+      "in category:",
+      selectedCategory
+    );
+  };
+
+  return (
+    <section className="relative bg-gradient-to-r from-primary-600 to-primary-800 text-white">
+      <div className="absolute inset-0 bg-black opacity-20"></div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            Fresh from Farm to Your Table
+          </h1>
+          <p className="text-xl md:text-2xl mb-8 text-green-100 max-w-3xl mx-auto">
+            Connect directly with local farmers and get the freshest produce
+            delivered to your doorstep
+          </p>
+
+          {/* Search Bar */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <form
+              onSubmit={handleSearch}
+              className="flex rounded-lg overflow-hidden shadow-lg"
+            >
+              <input
+                type="text"
+                placeholder="Search for vegetables, fruits, farmers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 px-6 py-4 text-gray-900 text-lg focus:outline-none"
+              />
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-4 py-4 text-gray-900 border-l border-gray-300 focus:outline-none"
+              >
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="submit"
+                className="bg-primary-700 hover:bg-primary-800 px-8 py-4 transition"
+              >
+                <i className="fas fa-search text-xl"></i>
+              </button>
+            </form>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-8 max-w-md mx-auto">
+            <div className="text-center">
+              <div className="text-3xl font-bold">500+</div>
+              <div className="text-green-200">Local Farmers</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold">2000+</div>
+              <div className="text-green-200">Fresh Products</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold">10k+</div>
+              <div className="text-green-200">Happy Customers</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Hero;
