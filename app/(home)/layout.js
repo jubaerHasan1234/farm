@@ -1,5 +1,5 @@
 import { MenuFooter, Navbar } from "@/app/components/index";
-import "./globals.css";
+import "../globals.css";
 
 export const metadata = {
   title: "Local Farmer Booking - Fresh Produce Direct from Farmers",
