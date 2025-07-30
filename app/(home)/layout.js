@@ -8,7 +8,6 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  'test'
   return (
     <html lang="en">
       <head>
