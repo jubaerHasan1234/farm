@@ -1,6 +1,7 @@
 import Reviews from "../../Rivews/Reviews";
 import ProductDescriptionAndReviewsAndFarmerInfo from "./ProductDescriptionAndReviewsAndFarmerInfo";
 import ProductDetailsImage from "./ProductDetailsImage";
+import RelatedProducts from "./RelatedProducts/RelatedProducts";
 
 export default function ProductDetails() {
   return (
@@ -11,6 +12,8 @@ export default function ProductDetails() {
       <ProductDescriptionAndReviewsAndFarmerInfo />
       {/* reviews */}
       <Reviews />
+      {/* Related Products */}
+      <RelatedProducts />
     </div>
   );
 }
