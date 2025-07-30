@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const Navbar = ({ menu = true, searchAndUserProfile = true }) => {
+const Navbar = ({ menu = true, searchAndUserProfile = true, order = true }) => {
   const { isDarkMode, toggleDarkMode, mounted } = useDarkMode();
   const pathname = usePathname();
   if (!mounted) return null;
@@ -14,6 +14,9 @@ const Navbar = ({ menu = true, searchAndUserProfile = true }) => {
     { href: "/products", label: "Products" },
     { href: "/farmers", label: "Farmers" },
     { href: "/about", label: "About" },
+    { href: "/orders", label: "My Orders" },
+    { href: "/login", label: "Login" },
+    { href: "/register", label: "Sign Up" },
   ];
 
   return (
@@ -60,26 +63,42 @@ const Navbar = ({ menu = true, searchAndUserProfile = true }) => {
           <div className="flex items-center space-x-4">
             {searchAndUserProfile && (
               <>
-                {" "}
-                {/* Search */}
-                <div className="hidden sm:block relative">
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    className="w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                  />
-                  <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                </div>
-                {/* Cart */}
-                <button
-                  className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
-                  aria-label="Shopping Cart"
-                >
-                  <i className="fas fa-shopping-cart text-xl"></i>
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    3
-                  </span>
-                </button>
+                {order && (
+                  <>
+                    {" "}
+                    {/* Search */}
+                    <div className="hidden sm:block relative">
+                      <input
+                        type="text"
+                        placeholder="Search products..."
+                        className="w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      />
+                      <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    {/* Cart */}
+                    <Link
+                      className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
+                      aria-label="Shopping Cart"
+                      href={"/cart"}
+                    >
+                      <i className="fas fa-shopping-cart text-xl"></i>
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        3
+                      </span>
+                    </Link>
+                    {/* Favourite */}
+                    <Link
+                      className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
+                      aria-label="Favourite"
+                      href={"/favourites"}
+                    >
+                      <i className="far fa-heart text-gray-600 dark:text-gray-400 text-xl"></i>
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        3
+                      </span>
+                    </Link>
+                  </>
+                )}
                 {/* User Menu */}
                 <div className="relative">
                   <button
