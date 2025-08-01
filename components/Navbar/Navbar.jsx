@@ -1,29 +1,63 @@
 "use client";
 
 import { useDarkMode } from "@/hooks";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
+import { useEffect } from "react";
 const Navbar = ({
   menu = true,
   searchAndUserProfile = true,
   order = true,
   search = true,
+  cartAndFavourite = true,
 }) => {
   const { isDarkMode, toggleDarkMode, mounted } = useDarkMode();
   const pathname = usePathname();
 
-  if (!mounted) return null;
+  const { data: session, status } = useSession();
 
+  useEffect(() => {
+    if (
+      session?.error === "RefreshAccessTokenError" ||
+      session?.error === "CredentialRefreshError"
+    ) {
+      signOut({ callbackUrl: "/login" });
+    }
+  }, [session?.error]);
+
+  const isLoggedIn = !!session?.user;
+  const userType = session?.user?.userType;
+
+  /* image start*/
+  const userImage =
+    session?.user?.profilePicture && session.user.profilePicture !== ""
+      ? session.user.profilePicture
+      : session?.user?.image && session.user.image !== ""
+      ? session.user.image
+      : "/default-profile.png"; // <- fallback image in /public folder
+  /* image end*/
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/products", label: "Products" },
-    { href: "/farmers", label: "Farmers" },
-    { href: "/about", label: "About" },
-    { href: "/orders", label: "My Orders" },
-    { href: "/login", label: "Login" },
-    { href: "/register", label: "Sign Up" },
+    { id: 1, href: "/", label: "Home", show: true },
+    { id: 2, href: "/products", label: "Products", show: true },
+    { id: 3, href: "/farmers", label: "Farmers", show: true },
+    { id: 4, href: "/about", label: "About", show: true },
+    { id: 5, href: "/orders", label: "My Orders", show: isLoggedIn },
+    { id: 6, href: "/login", label: "Login", show: !isLoggedIn },
+    { id: 7, href: "/register", label: "Sign Up", show: !isLoggedIn },
+    {
+      id: 8,
+      href: "/manage",
+      label: "Manage Products",
+      show: userType === "admin" || userType === "farmer",
+    },
+    {
+      id: 9,
+      label: "Logout",
+      isLogout: true,
+      show: isLoggedIn,
+    },
   ];
 
   return (
@@ -49,27 +83,37 @@ const Navbar = ({
 
           {/* Desktop Navigation */}
           {menu && (
-            <div className="hidden md:flex items-center space-x-8">
-              {navLinks.map(({ href, label }) => {
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`${
-                      pathname === href
-                        ? "text-primary-600 dark:text-primary-400 font-semibold"
-                        : "text-gray-700 dark:text-gray-300"
-                    } hover:text-primary-600 dark:hover:text-primary-400 transition`}
-                  >
-                    {label}
-                  </Link>
-                );
-              })}
+            <div className="hidden md:flex items-center space-x-3">
+              {navLinks
+                .filter((link) => link.show)
+                .map(({ id, href, label, isLogout }) =>
+                  isLogout ? (
+                    <button
+                      key={id}
+                      onClick={() => signOut({ callbackUrl: "/login" })}
+                      className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition"
+                    >
+                      {label}
+                    </button>
+                  ) : (
+                    <Link
+                      key={id}
+                      href={href}
+                      className={`${
+                        pathname === href
+                          ? "text-primary-600 dark:text-primary-400 font-semibold"
+                          : "text-gray-700 dark:text-gray-300"
+                      } hover:text-primary-600 dark:hover:text-primary-400 transition`}
+                    >
+                      {label}
+                    </Link>
+                  )
+                )}
             </div>
           )}
 
           {/* User Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             {searchAndUserProfile && (
               <>
                 {order && (
@@ -80,35 +124,39 @@ const Navbar = ({
                         <input
                           type="text"
                           placeholder="Search products..."
-                          className="w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                          className="w-48 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                         />
                         <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                       </div>
                     )}
 
-                    {/* Cart */}
-                    <Link
-                      className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
-                      aria-label="Shopping Cart"
-                      href="/cart"
-                    >
-                      <i className="fas fa-shopping-cart text-xl"></i>
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        3
-                      </span>
-                    </Link>
+                    {cartAndFavourite && (
+                      <>
+                        {/* Cart */}
+                        <Link
+                          className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
+                          aria-label="Shopping Cart"
+                          href="/cart"
+                        >
+                          <i className="fas fa-shopping-cart text-xl"></i>
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            3
+                          </span>
+                        </Link>
 
-                    {/* Favourite */}
-                    <Link
-                      className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
-                      aria-label="Favourite"
-                      href="/favourites"
-                    >
-                      <i className="far fa-heart text-gray-600 dark:text-gray-400 text-xl"></i>
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        3
-                      </span>
-                    </Link>
+                        {/* Favourite */}
+                        <Link
+                          className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
+                          aria-label="Favourite"
+                          href="/favourites"
+                        >
+                          <i className="far fa-heart text-gray-600 dark:text-gray-400 text-xl"></i>
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            3
+                          </span>
+                        </Link>
+                      </>
+                    )}
                   </>
                 )}
 
@@ -120,14 +168,16 @@ const Navbar = ({
                   >
                     <div className="w-8 h-8 relative rounded-full overflow-hidden">
                       <Image
-                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face"
-                        alt="User"
-                        width={32}
-                        height={32}
-                        className="object-cover rounded-full"
+                        src={userImage}
+                        alt={session?.user?.name || "User"}
+                        fill
+                        sizes="20"
+                        style={{ objectFit: "cover" }}
                       />
                     </div>
-                    <span className="hidden sm:block">John Doe</span>
+                    <span className="hidden sm:block ">
+                      {session?.user?.name?.split(" ").slice(0, 2).join(" ")}
+                    </span>
                     <i className="fas fa-chevron-down text-sm"></i>
                   </button>
                 </div>

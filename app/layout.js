@@ -1,3 +1,5 @@
+import AuthProviders from "@/components/AuthProviders";
+
 import "./globals.css";
 
 export const metadata = {
@@ -34,8 +36,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
-        {children}
-
+        <AuthProviders>{children}</AuthProviders>
         <div id="modal-root-content" />
       </body>
     </html>

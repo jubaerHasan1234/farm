@@ -7,6 +7,8 @@ import Values from "./About/Values";
 import Cart from "./Cart/Cart";
 import Categories from "./Categories/Categories";
 import ChoseUs from "./ChoseUs/ChoseUs";
+import BreadcrumbCreate from "./create/BreadcrumbCreate";
+import CreateProduct from "./create/CreateProduct";
 import CTA from "./Farmerrs/CTA";
 import FarmersGrid from "./Farmerrs/FarmersGrid";
 import FarmerHeader from "./Farmerrs/FarmersHeader";
@@ -15,6 +17,8 @@ import Footer from "./Footer/Footer";
 import MenuFooter from "./Footer/MenuFooter";
 import Hero from "./Hero/Hero";
 import Login from "./login/Login";
+import BreadcrumbManageList from "./Manage/BreadcrumbManageList";
+import ManageProduct from "./Manage/ManageProduct";
 import Modal from "./modal/Modal";
 import Navbar from "./Navbar/Navbar";
 import NewsLetter from "./NewsLetter/NewsLetter";
@@ -38,11 +42,14 @@ export {
   ActionButton,
   AllProduct,
   Breadcrumb,
+  BreadcrumbCreate,
+  BreadcrumbManageList,
   BreadcrumbOrders,
   Cart,
   Categories,
   ChoseUs,
   Count,
+  CreateProduct,
   CTA,
   EmailNotification,
   FarmerHeader,
@@ -53,6 +60,7 @@ export {
   Hero,
   HeroSection,
   Login,
+  ManageProduct,
   MenuFooter,
   MissionAndVision,
   Modal,

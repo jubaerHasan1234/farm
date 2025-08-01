@@ -10,6 +10,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "ix-marketing.imgix.net",
       },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
     ],
   },
 };
