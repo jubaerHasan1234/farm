@@ -8,6 +8,7 @@ import {
   NewsLetter,
 } from "@/components/index";
 import { getBaseUrl } from "@/lib/getBaseUrl";
+import { Suspense } from "react";
 const baseUrl = getBaseUrl();
 // ✅ Static metadata for the Home Page
 export const metadata = {
@@ -52,7 +53,9 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Categories />
-      <AllProduct />
+      <Suspense>
+        <AllProduct />
+      </Suspense>
       <ChoseUs />
       <NewsLetter />
       <MenuFooter />

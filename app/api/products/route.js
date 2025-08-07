@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { Products } from "@/model/product-model";
 import { dbConnect } from "@/service/mongo";
 import { NextResponse } from "next/server";

@@ -3,13 +3,16 @@ import {
   FiltersAndProduct,
   UserProductsPageHeader,
 } from "@/components/Products/UserProduct";
+import { Suspense } from "react";
 
 export default function ProductsPage() {
   return (
     <>
       <Navbar />
       <UserProductsPageHeader />
-      <FiltersAndProduct />
+      <Suspense>
+        <FiltersAndProduct />
+      </Suspense>
       <MenuFooter />
     </>
   );

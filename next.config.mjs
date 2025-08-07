@@ -1,8 +1,9 @@
-// next.config.js (should already be like this from previous steps)
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
+
   images: {
+    dangerouslyAllowSVG: true,
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "ix-marketing.imgix.net" },
@@ -10,8 +11,13 @@ const nextConfig = {
       { protocol: "http", hostname: "localhost" },
       { protocol: "https", hostname: "placehold.co" },
     ],
-    domains: ["placehold.co"],
-    dangerouslyAllowSVG: true,
+    domains: [
+      "images.unsplash.com",
+      "ix-marketing.imgix.net",
+      "lh3.googleusercontent.com",
+      "localhost",
+      "placehold.co",
+    ],
   },
 
   webpack: (config, { isServer }) => {
@@ -22,6 +28,7 @@ const nextConfig = {
     }
     return config;
   },
+
   eslint: {
     ignoreDuringBuilds: true,
   },

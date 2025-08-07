@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { auth } from "@/auth";
 import { Orders } from "@/model/orders-model";
 // Ensure Products model is imported if 'items.product' is populated

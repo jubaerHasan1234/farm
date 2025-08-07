@@ -4,13 +4,16 @@ import {
   MenuFooter,
   Navbar,
 } from "@/components";
+import { Suspense } from "react";
 
 export default function Manage() {
   return (
     <>
       <Navbar search={false} cartAndFavourite={false} />
       <BreadcrumbManageList />
-      <ManageProduct />
+      <Suspense>
+        <ManageProduct />
+      </Suspense>
       <MenuFooter />
     </>
   );

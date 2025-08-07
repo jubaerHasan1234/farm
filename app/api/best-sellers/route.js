@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Orders } from "@/model/orders-model";
 import { Products } from "@/model/product-model";
 import { dbConnect } from "@/service/mongo";

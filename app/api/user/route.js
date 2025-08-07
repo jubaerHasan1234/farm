@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { auth } from "@/auth"; // Adjust path as needed
 import { NextResponse } from "next/server";
 
