@@ -1,27 +1,5 @@
-"use client";
-
-import { useState } from "react";
+import HeroSearch from "./HeroSearch";
 const Hero = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All Categories");
-  const categories = [
-    "All Categories",
-    "Vegetables",
-    "Fruits",
-    "Grains",
-    "Dairy",
-  ];
-  const handleSearch = (e) => {
-    e.preventDefault();
-    // TODO: Implement search functionality
-    console.log(
-      "Searching for:",
-      searchQuery,
-      "in category:",
-      selectedCategory
-    );
-  };
-
   return (
     <section className="relative bg-gradient-to-r from-primary-600 to-primary-800 text-white">
       <div className="absolute inset-0 bg-black opacity-20"></div>
@@ -36,37 +14,7 @@ const Hero = () => {
           </p>
 
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-8">
-            <form
-              onSubmit={handleSearch}
-              className="flex rounded-lg overflow-hidden shadow-lg"
-            >
-              <input
-                type="text"
-                placeholder="Search for vegetables, fruits, farmers..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 px-6 py-4 text-gray-900 text-lg focus:outline-none"
-              />
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-4 text-gray-900 border-l border-gray-300 focus:outline-none"
-              >
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="submit"
-                className="bg-primary-700 hover:bg-primary-800 px-8 py-4 transition"
-              >
-                <i className="fas fa-search text-xl"></i>
-              </button>
-            </form>
-          </div>
+          <HeroSearch />
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-8 max-w-md mx-auto">

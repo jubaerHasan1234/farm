@@ -1,4 +1,4 @@
-import { User } from "@/model/user-modal";
+import { Users } from "@/model/user-modal";
 import { dbConnect } from "@/service/mongo";
 
 import { NextResponse } from "next/server";
@@ -36,10 +36,12 @@ export const POST = async (request) => {
   await dbConnect();
 
   // Check if user with this email already exists
-  const existingUser = await User.findOne({ email });
+  const existingUser = await Users.findOne({ email });
   if (existingUser) {
     return new NextResponse(
-      JSON.stringify({ message: "Email already in use" }),
+      JSON.stringify({
+        message: "your account already created please sign in",
+      }),
       {
         status: 409, // Conflict status code
       }
@@ -61,7 +63,7 @@ export const POST = async (request) => {
   };
 
   try {
-    const createdUser = await User.create(newUser);
+    const createdUser = await Users.create(newUser);
     return new NextResponse(
       JSON.stringify({
         message: "Your account has been created",

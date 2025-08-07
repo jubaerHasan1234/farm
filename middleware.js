@@ -26,6 +26,16 @@ export default auth((req) => {
   if (isAuthenticated && userType === "customer" && isFarmerRoute) {
     return Response.redirect(new URL("/", nextUrl));
   }
+  // Block authenticated users from accessing forgot/reset password routes
+  if (
+    isAuthenticated &&
+    (pathname.startsWith("/forgot-password") ||
+      pathname.startsWith("/reset-password") ||
+      pathname.startsWith("/login") ||
+      pathname.startsWith("/register"))
+  ) {
+    return Response.redirect(new URL("/", nextUrl));
+  }
 });
 
 export const config = {

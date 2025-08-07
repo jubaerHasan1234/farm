@@ -1,6 +1,73 @@
-import Image from "next/image";
+"use client";
 
+import { useCart } from "@/hooks";
+
+import { ClipLoader } from "react-spinners";
+import CartItem from "./CartItem";
+
+// Helper function to format price
+const formatPrice = (price) => `৳${price.toFixed(2)}`;
+
+// Custom hook for cart state and actions
+
+// CartItem sub-component for better readability
+
+// Main Cart Component
 const Cart = () => {
+  const {
+    cartItems,
+    loading,
+    error,
+    selectedItems,
+    handleSelectItem,
+    handleSelectAll,
+    updateCartItemQuantity,
+    deleteCartItem,
+    subtotal,
+    totalSelectedItemsPrice,
+    totalOriginalPriceForSelected,
+    totalItemsCount,
+    handlePlaceOrder, // Destructure the new function
+    placingOrder, // Destructure the new loading state
+  } = useCart();
+
+  const isAllSelected =
+    cartItems.length > 0 && selectedItems.size === cartItems.length;
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64 dark:bg-gray-900">
+        <ClipLoader size={50} color="#4A90E2" />
+        <p className="ml-4 text-lg text-gray-700 dark:text-gray-300">
+          Loading cart...
+        </p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-500 dark:text-red-400 dark:bg-gray-900">
+        <p>{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="text-center py-16 text-gray-500 dark:text-gray-400 dark:bg-gray-900">
+        <p className="text-2xl font-semibold mb-4">Your cart is empty!</p>
+        <p>Start shopping to add items to your cart.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 dark:bg-gray-900 dark:text-white">
       {/* Cart Header */}
@@ -9,69 +76,56 @@ const Cart = () => {
           <input
             type="checkbox"
             className="form-checkbox h-5 w-5 text-primary-500 rounded dark:bg-gray-700 dark:border-gray-600"
+            checked={isAllSelected}
+            onChange={(e) => handleSelectAll(e.target.checked)}
           />
-          <span className="text-lg">Select All (1 Item)</span>
+          <span className="text-lg">
+            Select All ({totalItemsCount}{" "}
+            {totalItemsCount === 1 ? "Item" : "Items"})
+          </span>
         </label>
         <div className="text-lg font-semibold">
           JUBAER, your total:{" "}
-          <span className="line-through text-red-500">520 Tk.</span>{" "}
-          <span className="text-green-500">465 Tk.</span>
+          <span className="line-through text-red-500">
+            {formatPrice(totalOriginalPriceForSelected)}
+          </span>{" "}
+          <span className="text-green-500">
+            {formatPrice(totalSelectedItemsPrice)}
+          </span>
         </div>
       </div>
 
       {/* Cart Items */}
       <div className="space-y-4">
-        {/* Product 1 */}
-        <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 flex items-center space-x-4">
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              className="form-checkbox h-5 w-5 text-primary-500 rounded dark:bg-gray-700 dark:border-gray-600"
-            />
-          </label>
-          <div className="flex-shrink-0">
-            <Image
-              src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&h=300&fit=crop"
-              alt="Product Image"
-              width={100}
-              height={100}
-              className="rounded-md"
-            />
-          </div>
-          <div className="flex-grow">
-            <h3 className="text-xl font-semibold text-primary-600 dark:text-primary-400">
-              ইতিহাসের ছিন্নপত্র ১ম, ২য় ও ৩য় খণ্ডের কালেকশন
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">কায় কাউস</p>
-            <div className="flex items-center space-x-4 mt-2">
-              <button className="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400">
-                <i className="fas fa-trash"></i> Delete
-              </button>
-            </div>
-          </div>
-          <div className="flex flex-col items-end space-y-2">
-            <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-md">
-              <button className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-md">
-                -
-              </button>
-              <span className="px-4 py-1 border-l border-r border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white">
-                1
-              </span>
-              <button className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-md">
-                +
-              </button>
-            </div>
-            <div className="text-2xl font-bold text-gray-800 dark:text-white">
-              2,620 Tk.
-            </div>
-          </div>
-        </div>
+        {cartItems.map((item) => (
+          <CartItem
+            key={item.productId} // Use productId as key
+            item={item}
+            isSelected={selectedItems.has(item.productId)}
+            onSelect={handleSelectItem}
+            onQuantityChange={updateCartItemQuantity}
+            onDelete={deleteCartItem}
+          />
+        ))}
       </div>
 
       {/* Order Button */}
       <div className="mt-6 flex justify-end">
-        <button className="bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out dark:bg-primary-700 dark:hover:bg-primary-800">
-          Place Order
+        <button
+          onClick={handlePlaceOrder} // Call the new function
+          disabled={placingOrder || totalSelectedItemsPrice <= 0} // Disable if placing order or no items selected
+          className={`bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out dark:bg-primary-700 dark:hover:bg-primary-800
+            ${
+              placingOrder || totalSelectedItemsPrice <= 0
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+        >
+          {placingOrder ? (
+            <ClipLoader size={20} color="#fff" />
+          ) : (
+            `Place Order (${formatPrice(totalSelectedItemsPrice)})`
+          )}
         </button>
       </div>
     </div>

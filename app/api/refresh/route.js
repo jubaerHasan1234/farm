@@ -1,10 +1,13 @@
-import { generateAccessToken, verifyRefreshToken } from "@/lib/jwt";
-import { cookies } from "next/headers";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "@/lib/jwt";
+
 import { NextResponse } from "next/server";
 
-export async function POST() {
-  const cookieStore = cookies();
-  const token = cookieStore.get("refreshToken")?.value;
+export async function POST(req) {
+  const { token } = await req.json();
 
   if (!token) {
     return NextResponse.json({ error: "No refresh token" }, { status: 401 });
@@ -13,9 +16,12 @@ export async function POST() {
   try {
     const decoded = verifyRefreshToken(token);
     const newAccessToken = generateAccessToken({ email: decoded.email });
-    console.log(newAccessToken);
+    const newRefreshToken = generateRefreshToken({ email: decoded.email });
 
-    return NextResponse.json({ accessToken: newAccessToken });
+    return NextResponse.json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
   } catch (err) {
     return NextResponse.json({ error: "Invalid token" }, { status: 403 });
   }

@@ -1,92 +1,239 @@
-import Image from "next/image";
+"use client";
+import { Heart, Loader2, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+// Assuming a global context provider exists
+import { useGlobal } from "../context/GlobalProvider";
+import FavouriteProductCard from "./FavouriteProductCard";
 
 const Favourite = () => {
+  // State to hold the fetched favorite products
+  const [favorites, setFavorites] = useState([]);
+  // State to hold cart product IDs
+  const [cartItems, setCartItems] = useState([]);
+
+  // State for loading status
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCartLoading, setIsCartLoading] = useState(true);
+
+  // State for any errors during fetching
+  const [error, setError] = useState(null);
+  const [cartError, setCartError] = useState(null);
+
+  // State to track which product is being removed from favorites or added/removed from cart
+  const [removingProductId, setRemovingProductId] = useState(null);
+  const [processingCartProductId, setProcessingCartProductId] = useState(null);
+
+  // Assuming a useGlobal hook exists to get context values
+  const { updateFavoriteCount, updateCartCount } = useGlobal();
+
+  // useEffect hook to fetch data when the component mounts
+  useEffect(() => {
+    const fetchFavourites = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch("/api/favorites");
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch favourites: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (data && Array.isArray(data.favorites)) {
+          setFavorites(data.favorites);
+        } else {
+          setFavorites([]);
+          console.warn(
+            "API response for favourites was not an array. Assuming empty list."
+          );
+        }
+      } catch (err) {
+        console.error("Error fetching favourites:", err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const fetchCartItems = async () => {
+      try {
+        setIsCartLoading(true);
+        const response = await fetch("/api/cart");
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch cart items: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (data && Array.isArray(data.cart)) {
+          setCartItems(data.cart.map((item) => item.productId));
+        } else {
+          setCartItems([]);
+        }
+      } catch (err) {
+        console.error("Error fetching cart items:", err);
+        setCartError(err.message);
+      } finally {
+        setIsCartLoading(false);
+      }
+    };
+
+    fetchFavourites();
+    fetchCartItems();
+  }, []); // The empty dependency array ensures this runs only once on mount
+
+  // Function for removing a favourite from the favorites list
+  const handleRemoveFavorite = async (productId) => {
+    setRemovingProductId(productId);
+    try {
+      const response = await fetch("/api/favorites", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId: productId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete favourite: ${response.statusText}`);
+      }
+
+      // FIX: Filter based on the productId, not the favorite document's _id
+      setFavorites((prevFavorites) =>
+        prevFavorites.filter((fav) => fav.productId !== productId)
+      );
+      updateFavoriteCount((prev) => prev - 1);
+    } catch (err) {
+      console.error("Error removing favourite:", err);
+      setError("Failed to remove product. Please try again.");
+    } finally {
+      setRemovingProductId(null);
+    }
+  };
+
+  // Function for adding an item to the cart
+  const handleAddToCart = async (product) => {
+    setProcessingCartProductId(product.productId);
+
+    try {
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: product.productId,
+          productName: product.productName,
+          image: product.image,
+          unit: product.unit,
+          price: product.price,
+          stock: 1, // Assuming default stock for cart item
+          quantity: 1, // Assuming default quantity
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to add to cart: ${response.statusText}`);
+      }
+
+      // Add the product ID to the cartItems state
+      setCartItems((prevCartItems) => [...prevCartItems, product.productId]);
+      updateCartCount((prev) => prev + 1);
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+      setCartError("Failed to add product to cart. Please try again.");
+    } finally {
+      setProcessingCartProductId(null);
+    }
+  };
+
+  // Function for removing an item from the cart
+  const handleRemoveFromCart = async (productId) => {
+    setProcessingCartProductId(productId);
+
+    try {
+      const response = await fetch("/api/cart", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to remove from cart: ${response.statusText}`);
+      }
+
+      // Filter out the product ID from the cartItems state
+      setCartItems((prevCartItems) =>
+        prevCartItems.filter((id) => id !== productId)
+      );
+      updateCartCount((prev) => prev - 1);
+    } catch (err) {
+      console.error("Error removing from cart:", err);
+      setCartError("Failed to remove product from cart. Please try again.");
+    } finally {
+      setProcessingCartProductId(null);
+    }
+  };
+
+  const hasError = error || cartError;
+  const isAllLoading = isLoading || isCartLoading;
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 dark:text-white">My Favourite</h1>
-      <p className="text-gray-600 mb-6 dark:text-gray-300">
-        You have 2 product(s) in your favourite
-      </p>
+    <div className="container mx-auto p-4 max-w-4xl">
+      <h1 className="text-3xl font-bold mb-4 dark:text-white flex items-center">
+        <Heart className="mr-2 text-red-500" size={28} /> My Favourites
+      </h1>
 
-      <div className="space-y-6">
-        {/* Product 1 */}
-        <div className="flex items-center bg-white p-4 rounded-lg shadow-md dark:bg-gray-800">
-          <div className="flex-shrink-0 w-24 h-24 relative mr-4">
-            <Image
-              src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&h=300&fit=crop" // Replace with actual image path
-              alt="Product Image"
-              width={100}
-              height={100}
-              className="rounded-md object-cover"
-            />
-          </div>
-          <div className="flex-grow">
-            <h2 className="text-lg font-semibold dark:text-white">
-              আব্বাসি খিলাফতের ইতিহাস
-            </h2>
-            <p className="text-gray-500 text-sm dark:text-gray-400">
-              শাইখ মাহমুদ শাকির
-            </p>
-            <div className="flex items-baseline mt-2">
-              <span className="text-xl font-bold text-primary-600 dark:text-primary-400">
-                Tk. 787
-              </span>
-              <span className="text-gray-500 line-through ml-2 dark:text-gray-400">
-                Tk. 1,050
-              </span>
-            </div>
-            <p className="text-gray-500 text-sm mt-1 dark:text-gray-400">
-              4 Ratings | 2 Reviews
-            </p>
-            <button className="mt-3 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md flex items-center transition duration-300 dark:bg-primary-700 dark:hover:bg-primary-800">
-              <i className="fas fa-shopping-cart text-xl mr-2"></i>
-              Add to Cart
-            </button>
-          </div>
-          <button className="text-gray-400 hover:text-red-500 transition duration-300 ml-4">
-            <i className="fas fa-trash"></i>
-          </button>
+      {isAllLoading && (
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="animate-spin text-primary-500" size={48} />
+          <p className="ml-4 text-xl text-gray-500 dark:text-gray-400">
+            Loading your data...
+          </p>
         </div>
+      )}
 
-        {/* Product 2 */}
-        <div className="flex items-center bg-white p-4 rounded-lg shadow-md dark:bg-gray-800">
-          <div className="flex-shrink-0 w-24 h-24 relative mr-4">
-            <Image
-              src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&h=300&fit=crop" // Replace with actual image path
-              alt="Product Image"
-              width={100}
-              height={100}
-              className="rounded-md object-cover"
-            />
-          </div>
-          <div className="flex-grow">
-            <h2 className="text-lg font-semibold dark:text-white">
-              চাণক্য নীতি
-            </h2>
-            <p className="text-gray-500 text-sm dark:text-gray-400">
-              তীর্থংকর বন্দ্যোপাধ্যায়
-            </p>
-            <div className="flex items-baseline mt-2">
-              <span className="text-xl font-bold text-primary-600 dark:text-primary-400">
-                Tk. 160
-              </span>
-              <span className="text-gray-500 line-through ml-2 dark:text-gray-400">
-                Tk. 200
-              </span>
-            </div>
-            <p className="text-gray-500 text-sm mt-1 dark:text-gray-400">
-              64 Ratings | 41 Reviews
-            </p>
-            <button className="mt-3 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md flex items-center transition duration-300 dark:bg-primary-700 dark:hover:bg-primary-800">
-              <i className="fas fa-shopping-cart text-xl mr-2"></i>
-              Add to Cart
-            </button>
-          </div>
-          <button className="text-gray-400 hover:text-red-500 transition duration-300 ml-4">
-            <i className="fas fa-trash"></i>
-          </button>
+      {hasError && (
+        <div className="flex justify-center items-center h-64 text-red-500 dark:text-red-400">
+          <XCircle className="mr-2" size={24} />
+          <p>Error: {error || cartError}</p>
         </div>
-      </div>
+      )}
+
+      {!isAllLoading && !hasError && favorites.length === 0 && (
+        <div className="text-center p-8 bg-gray-100 rounded-lg dark:bg-gray-900">
+          <p className="text-xl text-gray-500 dark:text-gray-400">
+            You don't have any favourite products yet.
+          </p>
+        </div>
+      )}
+
+      {!isAllLoading && !hasError && favorites.length > 0 && (
+        <>
+          <p className="text-gray-600 mb-6 dark:text-gray-300">
+            You have {favorites.length} product(s) in your favourites
+          </p>
+          <div className="space-y-6">
+            {favorites.map((product) => (
+              <FavouriteProductCard
+                key={product._id}
+                product={product}
+                onRemove={handleRemoveFavorite}
+                onAddToCart={handleAddToCart}
+                onRemoveFromCart={handleRemoveFromCart}
+                isInCart={cartItems.includes(product.productId)}
+                isRemovingFavorite={
+                  processingCartProductId === product.productId
+                }
+                isProcessingCart={processingCartProductId === product.productId}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

@@ -15,6 +15,7 @@ import FarmerHeader from "./Farmerrs/FarmersHeader";
 import Favourite from "./Favourite/Favourite";
 import Footer from "./Footer/Footer";
 import MenuFooter from "./Footer/MenuFooter";
+import ForgetPassword from "./ForgetPassword/ForgetPassword";
 import Hero from "./Hero/Hero";
 import Login from "./login/Login";
 import BreadcrumbManageList from "./Manage/BreadcrumbManageList";
@@ -57,6 +58,7 @@ export {
   Favourite,
   FiltersAndProduct,
   Footer,
+  ForgetPassword,
   Hero,
   HeroSection,
   Login,

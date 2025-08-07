@@ -1,15 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
-export default function Quantity() {
-  const [quantity, setQuantity] = useState(1);
+export default function Quantity({ quantity, setQuantity, stock }) {
   const decreaseQuantity = () => {
     if (quantity > 1) setQuantity(quantity - 1);
   };
 
   const increaseQuantity = () => {
-    setQuantity(quantity + 1);
+    if (quantity !== stock) setQuantity(quantity + 1);
   };
   return (
     <div className="space-y-4">

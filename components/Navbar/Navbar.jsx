@@ -6,6 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { useGlobal } from "../context/GlobalProvider";
+import Search from "./Search";
 const Navbar = ({
   menu = true,
   searchAndUserProfile = true,
@@ -17,7 +19,8 @@ const Navbar = ({
   const pathname = usePathname();
 
   const { data: session, status } = useSession();
-
+  // console.log(session);
+  const { cartCount, favoriteCount } = useGlobal();
   useEffect(() => {
     if (
       session?.error === "RefreshAccessTokenError" ||
@@ -29,6 +32,7 @@ const Navbar = ({
 
   const isLoggedIn = !!session?.user;
   const userType = session?.user?.userType;
+  // console.log(isLoggedIn);
 
   /* image start*/
   const userImage =
@@ -43,14 +47,19 @@ const Navbar = ({
     { id: 2, href: "/products", label: "Products", show: true },
     { id: 3, href: "/farmers", label: "Farmers", show: true },
     { id: 4, href: "/about", label: "About", show: true },
-    { id: 5, href: "/orders", label: "My Orders", show: isLoggedIn },
+    {
+      id: 5,
+      href: "/orders",
+      label: userType === "farmer" ? "Orders" : "My Orders",
+      show: isLoggedIn,
+    },
     { id: 6, href: "/login", label: "Login", show: !isLoggedIn },
     { id: 7, href: "/register", label: "Sign Up", show: !isLoggedIn },
     {
       id: 8,
       href: "/manage",
       label: "Manage Products",
-      show: userType === "admin" || userType === "farmer",
+      show: (isLoggedIn && userType === "admin") || userType === "farmer",
     },
     {
       id: 9,
@@ -61,7 +70,7 @@ const Navbar = ({
   ];
 
   return (
-    <nav className="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50">
+    <nav className="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50 ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -119,16 +128,7 @@ const Navbar = ({
                 {order && (
                   <>
                     {/* Search */}
-                    {search && (
-                      <div className="hidden sm:block relative">
-                        <input
-                          type="text"
-                          placeholder="Search products..."
-                          className="w-48 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                        />
-                        <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                      </div>
-                    )}
+                    {search && <Search />}
 
                     {cartAndFavourite && (
                       <>
@@ -140,7 +140,7 @@ const Navbar = ({
                         >
                           <i className="fas fa-shopping-cart text-xl"></i>
                           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                            3
+                            {cartCount}
                           </span>
                         </Link>
 
@@ -152,7 +152,7 @@ const Navbar = ({
                         >
                           <i className="far fa-heart text-gray-600 dark:text-gray-400 text-xl"></i>
                           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                            3
+                            {favoriteCount}
                           </span>
                         </Link>
                       </>
@@ -161,26 +161,28 @@ const Navbar = ({
                 )}
 
                 {/* User Menu */}
-                <div className="relative">
-                  <button
-                    className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
-                    aria-label="User Menu"
-                  >
-                    <div className="w-8 h-8 relative rounded-full overflow-hidden">
-                      <Image
-                        src={userImage}
-                        alt={session?.user?.name || "User"}
-                        fill
-                        sizes="20"
-                        style={{ objectFit: "cover" }}
-                      />
-                    </div>
-                    <span className="hidden sm:block ">
-                      {session?.user?.name?.split(" ").slice(0, 2).join(" ")}
-                    </span>
-                    <i className="fas fa-chevron-down text-sm"></i>
-                  </button>
-                </div>
+                {isLoggedIn && (
+                  <div className="relative">
+                    <button
+                      className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
+                      aria-label="User Menu"
+                    >
+                      <div className="w-8 h-8 relative rounded-full overflow-hidden">
+                        <Image
+                          src={userImage}
+                          alt={session?.user?.name || "User"}
+                          fill
+                          sizes="20"
+                          style={{ objectFit: "cover" }}
+                        />
+                      </div>
+                      <span className="hidden sm:block ">
+                        {session?.user?.name?.split(" ").slice(0, 2).join(" ")}
+                      </span>
+                      <i className="fas fa-chevron-down text-sm"></i>
+                    </button>
+                  </div>
+                )}
               </>
             )}
 

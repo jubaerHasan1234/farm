@@ -1,5 +1,6 @@
 "use client";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation"; // Corrected import
 import { useState } from "react";
 import loginValidate from "../../utils/loginValidate";
@@ -141,12 +142,12 @@ export default function LoginForm() {
           </label>
         </div>
 
-        <a
-          href="forgot-password.html"
+        <Link
+          href="forgot-password"
           className="text-sm text-primary-600 hover:text-primary-500"
         >
           Forgot password?
-        </a>
+        </Link>
       </div>
       <Error message={errors.remember} />
       <button

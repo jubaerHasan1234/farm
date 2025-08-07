@@ -1,10 +1,10 @@
-// "use server";
+import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { cookies } from "next/headers";
 import { authConfig } from "./auth.config";
+import mongoClientPromise from "./database/mongoClientPromise";
 import { getBaseUrl } from "./lib/getBaseUrl";
 import { generateAccessToken, generateRefreshToken } from "./lib/jwt";
 import { Users } from "./model/user-modal";
@@ -58,6 +58,9 @@ export const {
   signOut,
   handlers: { GET, POST },
 } = NextAuth({
+  adapter: MongoDBAdapter(mongoClientPromise, {
+    databaseName: process.env.ENVIRONMENT,
+  }),
   ...authConfig,
   providers: [
     CredentialsProvider({
@@ -65,7 +68,9 @@ export const {
         if (credentials == null) return null;
         await dbConnect();
         try {
-          const user = await Users.findOne({ email: credentials?.email });
+          const user = await Users.findOne({
+            email: credentials?.email,
+          }).lean();
 
           if (user) {
             const isMatch = await bcrypt.compare(
@@ -84,27 +89,21 @@ export const {
               // ✅ Generate tokens
               const accessToken = generateAccessToken(payload);
               const refreshToken = generateRefreshToken(payload);
-              // ✅ Set refreshToken as HttpOnly cookie here directly using `cookies()` (App Router only)
-              cookies().set({
-                name: "refreshToken",
-                value: refreshToken,
-                httpOnly: true,
-                path: "/",
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "lax",
-                maxAge: 7 * 24 * 60 * 60,
-              });
+
               // ✅ Return user + tokens (this goes to jwt() callback)
 
               return {
                 id: user._id.toString(),
                 email: user.email,
-                name: `${user.firstName} ${user.lastName}`,
-                userType: user.userType,
-                phone: user.phone,
-                address: user.address,
-                profilePicture: user.profilePicture,
-                bio: user.bio,
+                name:
+                  user.firstName || user.lastName
+                    ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
+                    : user.name ?? "Unknown User",
+                userType: user.userType || "customer",
+                phone: user.phone ?? "",
+                address: user.address ?? "",
+                profilePicture: user.profilePicture ?? user.image ?? "",
+                bio: user.bio ?? "",
                 accessToken,
                 refreshToken,
               };
@@ -147,8 +146,17 @@ export const {
             accessToken: account.access_token,
             accessTokenExpires: Date.now() + account.expires_in * 1000,
             refreshToken: account.refresh_token,
-            user,
             provider: "google",
+            user: {
+              id: user.id,
+              email: user.email,
+              name: user.name || "Google User",
+              userType: user?.userType || "customer", // default
+              profilePicture: user?.image || "",
+              address: user?.address || "",
+              bio: user?.bio || "",
+              phone: user?.phone || "",
+            },
           };
         }
 
@@ -171,7 +179,6 @@ export const {
 
       // 🔄 Refresh for Google
       if (token.provider === "google") {
-        console.log("new refresh token");
         return await refreshAccessToken(token);
       }
 
@@ -181,6 +188,9 @@ export const {
           const res = await fetch(`${getBaseUrl()}/api/refresh`, {
             method: "POST",
             credentials: "include", // to send HTTP-only cookie
+            body: JSON.stringify({
+              token: token.refreshToken,
+            }),
           });
 
           if (!res.ok) {
@@ -188,15 +198,14 @@ export const {
             console.error("Refresh failed:", error);
             throw new Error(error.error || "Refresh failed");
           }
-          console.log("new refresh token");
 
           const data = await res.json();
-          console.log(res);
 
           return {
             ...token,
             accessToken: data.accessToken,
             accessTokenExpires: Date.now() + 15 * 60 * 1000,
+            refreshToken: data.refreshToken,
           };
         } catch (err) {
           console.error("Credential refresh error:", err);
@@ -208,7 +217,16 @@ export const {
     },
 
     async session({ session, token }) {
-      session.user = token.user;
+      session.user = {
+        id: token.user?.id || null,
+        name: token.user?.name || "Unknown User",
+        email: token.user?.email,
+        userType: token.user?.userType || "customer",
+        profilePicture: token.user?.profilePicture || "",
+        phone: token.user?.phone || "",
+        address: token.user?.address || "",
+        bio: token.user?.bio || "",
+      };
       session.accessToken = token.accessToken;
       session.error = token.error;
       return session;

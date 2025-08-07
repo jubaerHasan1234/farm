@@ -1,10 +1,15 @@
 import ManageProductCard from "./ManageProductCard";
 
-export default function ManageProductAll() {
+export default function ManageProductAll({ products, setProducts }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {Array.from({ length: 6 }).map((_, index) => (
-        <ManageProductCard key={index} />
+      {products.map((product) => (
+        <ManageProductCard
+          key={product._id}
+          product={product}
+          setProducts={setProducts}
+          products={products}
+        />
       ))}
     </div>
   );

@@ -24,7 +24,7 @@ const Modal = ({ children }) => {
     <dialog
       ref={modalRef}
       onClose={onHide}
-      className="w-screen h-screen p-0 m-0 border-none  overflow-auto scrollbar-none bg-gray-900 mx-auto my-auto rounded-md"
+      className="w-screen h-screen p-0 m-0 border-none  overflow-auto scrollbar-none bg-white mx-auto my-auto rounded-md dark:bg-gray-900 static"
     >
       <AnimatePresence>
         <motion.div

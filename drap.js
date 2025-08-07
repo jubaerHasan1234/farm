@@ -1,57 +1,57 @@
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import bcrypt from "bcryptjs";
-import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
-import { authConfig } from "./auth.config";
-import mongoClientPromise from "./database/mongoClientPromise";
-import { User } from "./model/user-modal";
-import { dbConnect } from "./service/mongo";
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
-  adapter: MongoDBAdapter(mongoClientPromise, {
-    databaseName: process.env.ENVIRONMENT,
-  }),
-  ...authConfig,
-  providers: [
-    CredentialsProvider({
-      credentials: {
-        email: {},
-        password: {},
-      },
+const searchParams = useSearchParams();
+const pathname = usePathname();
+const { replace } = useRouter();
 
-      async authorize(credentials) {
-        if (credentials == null) return null;
-        await dbConnect();
-        try {
-          const user = await User.findOne({ email: credentials.email });
-          // console.log({ user });
-          if (user) {
-            const isMatch = await bcrypt.compare(
-              credentials.password,
-              user.password
-            );
+const [searchTerm, setSearchTerm] = useState({
+  destination: destination || "Puglia",
+  checkin: checkin,
+  checkout: checkout,
+});
 
-            if (isMatch) {
-              return user;
-            } else {
-              throw new Error("Email or password mismatch");
-            }
-          } else {
-            throw new Error("User not found");
-          }
-        } catch (error) {
-          throw new Error(error);
-        }
-      },
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
+const [allowSearch, setAllowSearch] = useState(true);
+
+const handleInputs = (e) => {
+  const name = e.target.name;
+  const value = e.target.value;
+
+  const state = { ...searchTerm, [name]: value };
+
+  if (new Date(state.checkin).getTime() > new Date(state.checkout).getTime()) {
+    setAllowSearch(false);
+  } else {
+    setAllowSearch(true);
+  }
+  setSearchTerm(state);
+};
+
+function doSearch(event) {
+  const params = new URLSearchParams(searchParams);
+
+  params.set("destination", searchTerm?.destination || "all");
+  if (searchTerm?.checkin && searchTerm?.checkout) {
+    params.set("checkin", searchTerm?.checkin);
+    params.set("checkout", searchTerm?.checkout);
+  }
+
+  if (pathname.includes("hotels")) {
+    replace(`${pathname}?${params.toString()}`);
+  } else {
+    replace(`${pathname}hotels?${params.toString()}`);
+  }
+}
+<div className="flex justify-center items-center h-64">
+  <ClipLoader speedMultiplier={0.5} size={50} color="#4fa94d" />
+</div>;
+JSON.stringify({
+  items: [
+    {
+      product: product._id,
+      quantity: quantity,
+      price: product.price * quantity,
+      unit: product.unit,
+    },
   ],
+  totalAmount: product.price * quantity,
+  shippingCost: 50,
+  serviceFee: 50,
 });
