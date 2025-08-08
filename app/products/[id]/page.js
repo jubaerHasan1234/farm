@@ -20,9 +20,20 @@ export async function generateMetadata({ params }) {
 
   const imageUrl = product.images?.[0] || `${baseUrl}/social.jpg`;
 
+  // Dynamically add the productName to the keywords array
+  const keywords = [
+    "fresh produce",
+    "organic",
+    "farm fresh",
+    "buy local",
+    "FarmFresh",
+    product.productName,
+  ].filter(Boolean); // Filters out any undefined or null values
+
   return {
     title,
     description,
+    keywords, // The updated keywords array is used here
     openGraph: {
       title,
       description,
