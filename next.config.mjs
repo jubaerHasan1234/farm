@@ -10,6 +10,7 @@ const nextConfig = {
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "http", hostname: "localhost" },
       { protocol: "https", hostname: "placehold.co" },
+      { protocol: "https", hostname: "res.cloudinary.com" },
     ],
     domains: [
       "images.unsplash.com",
@@ -17,6 +18,7 @@ const nextConfig = {
       "lh3.googleusercontent.com",
       "localhost",
       "placehold.co",
+      "res.cloudinary.com",
     ],
   },
 
