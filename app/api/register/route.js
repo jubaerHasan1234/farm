@@ -22,23 +22,15 @@ export const POST = async (request) => {
 
   let profilePicturePath = null;
   if (profilePicture instanceof File) {
-    try {
-      const buffer = Buffer.from(await profilePicture.arrayBuffer());
-      const filename = `${Date.now()}-${profilePicture.name}`;
+    const buffer = Buffer.from(await profilePicture.arrayBuffer());
+    const filename = `${Date.now()}-${profilePicture.name}`;
+    const uploadDir = path.join(process.cwd(), "public/uploads");
 
-      if (process.env.NODE_ENV === "development") {
-        const uploadDir = path.join(process.cwd(), "public/uploads");
-        await fs.mkdir(uploadDir, { recursive: true });
-        await fs.writeFile(path.join(uploadDir, filename), buffer);
-        profilePicturePath = `/uploads/${filename}`;
-      } else {
-        // In production, skip saving to local disk
-        // Later you can replace this with Cloudinary/S3 upload
-        profilePicturePath = null;
-      }
-    } catch (err) {
-      console.error("File upload error:", err);
-    }
+    // Ensure the uploads directory exists
+    await fs.mkdir(uploadDir, { recursive: true });
+
+    await fs.writeFile(path.join(uploadDir, filename), buffer);
+    profilePicturePath = `/uploads/${filename}`;
   }
 
   await dbConnect();
@@ -82,10 +74,9 @@ export const POST = async (request) => {
       }
     );
   } catch (error) {
-    console.error("Register API error:", error);
-    return NextResponse.json(
-      { message: error.message || "Internal Server Error" },
-      { status: 500 }
-    );
+    console.error(error);
+    return new NextResponse(error.message, {
+      status: 500,
+    });
   }
 };
