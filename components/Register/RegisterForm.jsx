@@ -85,6 +85,7 @@ export default function RegisterForm({ onSubmit }) {
         method: "POST",
         body: formPayload,
       });
+      console.log(response);
 
       if (!response.ok) {
         let errorData = {};

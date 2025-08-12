@@ -74,9 +74,10 @@ export const POST = async (request) => {
       }
     );
   } catch (error) {
-    console.error(error);
-    return new NextResponse(error.message, {
-      status: 500,
-    });
+    console.error("Register API error:", error);
+    return NextResponse.json(
+      { message: error.message || "Internal Server Error" },
+      { status: 500 }
+    );
   }
 };
