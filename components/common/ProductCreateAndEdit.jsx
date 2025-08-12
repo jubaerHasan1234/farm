@@ -1,5 +1,6 @@
 "use client";
 import { Upload, X } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import Message from "./Message";
 
@@ -46,10 +47,10 @@ const ProductCreateAndEdit = ({
       if (product.images) {
         const existingImages = product.images.map((img, index) => ({
           id: `existing-${index}`,
-          preview: img.url || img.preview || img,
-          name: img.name || `Image ${index + 1}`,
+          preview: img, // img is the URL from the database
+          name: `Image ${index + 1}`,
           isExisting: true,
-          originalUrl: img.url || img.preview || img,
+          originalUrl: img,
         }));
         setImages(existingImages);
       }
@@ -148,6 +149,7 @@ const ProductCreateAndEdit = ({
             file: file,
             preview: event.target.result,
             name: file.name,
+            isExisting: false, // Flag as a new image
           },
         ]);
       };
@@ -196,13 +198,21 @@ const ProductCreateAndEdit = ({
     e.preventDefault();
 
     if (validateForm()) {
+      // 🐛 FIX: Correctly format images for the API
+      const imagesForAPI = images.map((img) => {
+        if (img.isExisting) {
+          // Send existing images with their URL
+          return { url: img.originalUrl };
+        } else {
+          // Send new images with their base64 data
+          return { base64: img.preview };
+        }
+      });
+
       const productData = {
         ...formData,
-        images: images.map((img) => ({
-          name: img.name,
-          base64: img.preview,
-        })),
-        id: product?.id || Date.now(), // Use existing ID for edit, generate new for create
+        images: imagesForAPI, // Use the new, correctly formatted array
+        id: product?.id || Date.now(),
       };
 
       // Call onSave callback if provided
@@ -210,14 +220,11 @@ const ProductCreateAndEdit = ({
         if (isEditMode) {
           productData._id = product._id;
           productData.createdBy = product.createdBy;
-
           productData.activeStatus = product.activeStatus;
         }
         onSave(productData);
       } else {
         console.log(productData);
-
-        alert(`Product ${isEditMode ? "updated" : "created"} successfully!`);
       }
     }
   };
@@ -238,6 +245,10 @@ const ProductCreateAndEdit = ({
           </button>
         )}
       </div>
+
+      {/* Messages */}
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      <Message type="success" message={success} />
 
       <div className="space-y-8">
         {/* Basic Information */}
@@ -472,9 +483,12 @@ const ProductCreateAndEdit = ({
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-4">
                   {images.map((image) => (
                     <div key={image.id} className="relative group">
-                      <img
+                      {/* Use the next/image component for better performance and to avoid the host error */}
+                      <Image
                         src={image.preview}
                         alt={image.name}
+                        width={96}
+                        height={96}
                         className="w-full h-24 object-cover rounded-lg border border-gray-300"
                       />
                       <button
@@ -539,7 +553,6 @@ const ProductCreateAndEdit = ({
                 type="date"
                 id="harvestDate"
                 name="harvestDate"
-                // value={formData.harvestDate}
                 value={
                   formData.harvestDate
                     ? new Date(formData.harvestDate).toISOString().split("T")[0]
@@ -606,8 +619,6 @@ const ProductCreateAndEdit = ({
           </button>
         </div>
       </div>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-      <Message type="success" message={success} />
     </div>
   );
 };
