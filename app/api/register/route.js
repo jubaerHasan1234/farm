@@ -22,15 +22,23 @@ export const POST = async (request) => {
 
   let profilePicturePath = null;
   if (profilePicture instanceof File) {
-    const buffer = Buffer.from(await profilePicture.arrayBuffer());
-    const filename = `${Date.now()}-${profilePicture.name}`;
-    const uploadDir = path.join(process.cwd(), "public/uploads");
+    try {
+      const buffer = Buffer.from(await profilePicture.arrayBuffer());
+      const filename = `${Date.now()}-${profilePicture.name}`;
 
-    // Ensure the uploads directory exists
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    await fs.writeFile(path.join(uploadDir, filename), buffer);
-    profilePicturePath = `/uploads/${filename}`;
+      if (process.env.NODE_ENV === "development") {
+        const uploadDir = path.join(process.cwd(), "public/uploads");
+        await fs.mkdir(uploadDir, { recursive: true });
+        await fs.writeFile(path.join(uploadDir, filename), buffer);
+        profilePicturePath = `/uploads/${filename}`;
+      } else {
+        // In production, skip saving to local disk
+        // Later you can replace this with Cloudinary/S3 upload
+        profilePicturePath = null;
+      }
+    } catch (err) {
+      console.error("File upload error:", err);
+    }
   }
 
   await dbConnect();
