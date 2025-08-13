@@ -1,7 +1,7 @@
 import { Products } from "@/model/product-model"; // Adjust the path as needed
 import { dbConnect } from "@/service/mongo";
 import { NextResponse } from "next/server";
-
+export const dynamic = "force-dynamic";
 // A constant list of your product categories
 const ALL_CATEGORIES = [
   "vegetables",
